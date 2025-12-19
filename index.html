@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>随机数生成器</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #f5f6fb;
+        color: #2f3137;
+      }
+
+      body::before {
+        content: '';
+        display: block;
+        height: 6px;
+        background: linear-gradient(
+          90deg,
+          #6d9dfc,
+          #7cd5ff,
+          #74e2d3,
+          #f8ce74,
+          #ff9f7f,
+          #ff6f91
+        );
+      }
+
+      .app-shell {
+        max-width: 1600px;
+        margin: 40px auto 60px;
+        padding: 0 20px;
+      }
+
+      .app {
+        border: 1px solid #e7e9f2;
+        border-radius: 10px;
+        background: #fbfbfe;
+        box-shadow: 0 8px 28px rgba(110, 124, 158, 0.12);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+      }
+
+      .app-header {
+        background: #fefdfb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 18px 24px;
+        border-bottom: 1px solid #eceff5;
+      }
+
+      .app-header .title {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #212226;
+      }
+
+      .app-header .icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #edf2ff;
+        border: 1px solid #d7e2ff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #4b6cff;
+        font-size: 16px;
+      }
+
+      button {
+        font: inherit;
+        border-radius: 6px;
+        border: 1px solid #cdd5ea;
+        padding: 8px 18px;
+        cursor: pointer;
+        background: #fff;
+        color: #394150;
+        transition: all 0.2s ease;
+      }
+
+      button:hover:not(:disabled) {
+        border-color: #9bb2f5;
+        color: #274cb7;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .btn-accent {
+        background: #ff934f;
+        border-color: #ff934f;
+        color: #fff;
+      }
+
+      .btn-accent:hover:not(:disabled) {
+        background: #ff7d2b;
+        border-color: #ff7d2b;
+        color: #fff;
+      }
+
+      .textarea-card {
+        padding: 24px 24px 18px;
+        border-bottom: 1px solid #eceff5;
+      }
+
+      textarea:focus,
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #7fa8ff;
+        box-shadow: 0 0 0 2px rgba(127, 168, 255, 0.32);
+      }
+
+      .result-card {
+        padding: 38px 40px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .display {
+        border: 1px solid #efebe2;
+        border-radius: 6px;
+        background: #fbfbfb;
+        min-height: 300px;
+        max-height: 400px;
+        width: 100%;
+        max-width: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        overflow-y: auto;
+        padding: 20px 50px;
+      }
+
+      .display span {
+        font-size: 77px;
+        font-weight: 700;
+        color: #d24a45;
+        letter-spacing: 0.08em;
+        text-shadow: 0 8px 16px rgba(210, 74, 69, 0.18);
+        word-wrap: break-word;
+        word-break: break-all;
+        line-height: 1.2;
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .display.many-numbers span {
+        font-size: 42px;
+        line-height: 1.3;
+      }
+
+      .display.very-many-numbers span {
+        font-size: 32px;
+        line-height: 1.4;
+      }
+
+      .display[data-state='message'] span {
+        font-size: 20px;
+        font-weight: 500;
+        color: #7c8399;
+        letter-spacing: normal;
+        text-shadow: none;
+      }
+
+      .action-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        position: sticky;
+        bottom: 0;
+        background: #fbfbfe;
+        padding: 10px 0;
+        border-top: 1px solid #f1f2f7;
+        margin-top: 10px;
+      }
+
+      .settings-card {
+        padding: 26px 24px 30px;
+        border-top: 1px solid #eceff5;
+        display: grid;
+        gap: 18px;
+      }
+
+      .settings-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #424655;
+      }
+
+      .settings-title .icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: #f0f4ff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #5670ff;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f9faff;
+        border: 1px solid #e1e5f4;
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 14px;
+        color: #485065;
+      }
+
+      .field label {
+        min-width: 70px;
+      }
+
+      .field input,
+      .field select {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid #d8def0;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font: inherit;
+      }
+
+      .field-hint {
+        font-size: 12px;
+        color: #9aa0b7;
+        margin-left: 6px;
+        white-space: nowrap;
+        font-weight: normal;
+      }
+
+      .quick-buttons,
+      .range-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .quick-buttons button,
+      .range-buttons button {
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 4px;
+        border: 1px solid #d9dfe9;
+        background: #fff;
+      }
+
+      .quick-buttons button:hover,
+      .range-buttons button:hover {
+        border-color: #8da8ff;
+        color: #3756d6;
+      }
+
+      .history-panel {
+        background: #f8f9fc;
+        border-right: 1px solid #e7e9f2;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .history-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+        color: #424655;
+        font-size: 14px;
+      }
+
+      .history-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(100vh - 200px);
+        min-height: 300px;
+      }
+
+      .history-item {
+        background: #fff;
+        border: 1px solid #e1e5f4;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #485065;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .history-item:hover {
+        border-color: #8da8ff;
+        background: #f0f4ff;
+      }
+
+      .history-item .time {
+        font-size: 12px;
+        color: #9aa0b7;
+        margin-bottom: 4px;
+      }
+
+      .history-item .numbers {
+        font-weight: 500;
+        color: #d24a45;
+      }
+
+      .history-item .content {
+        flex: 1;
+        cursor: pointer;
+      }
+
+      .history-item .delete-btn {
+        background: #ff6b6b;
+        border: none;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        margin-left: 8px;
+        padding: 0;
+      }
+
+      .history-item:hover .delete-btn {
+        opacity: 1;
+      }
+
+      .history-item .delete-btn:hover {
+        background: #ff5252;
+        transform: scale(1.1);
+      }
+
+      .clear-history {
+        padding: 6px 12px;
+        font-size: 12px;
+        background: #f5f6fb;
+        border: 1px solid #d9dfe9;
+        color: #7c8399;
+      }
+
+      .clear-history:hover {
+        background: #fff;
+        border-color: #8da8ff;
+        color: #3756d6;
+      }
+
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .toast.success {
+        background: #51cf66;
+      }
+
+      .toast.warning {
+        background: #ffd43b;
+        color: #333;
+      }
+
+      .main-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      @media (max-width: 768px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        
+        .history-panel {
+          order: 2;
+          border-right: none;
+          border-top: 1px solid #e7e9f2;
+          max-height: 40vh;
+          min-height: 200px;
+        }
+        
+        .history-list {
+          max-height: calc(40vh - 80px);
+          min-height: 150px;
+        }
+        
+        .main-content {
+          order: 1;
+        }
+        
+        .display {
+          min-height: 200px;
+          max-height: 320px;
+          padding: 15px 20px;
+        }
+        
+        .display span {
+          font-size: 48px;
+        }
+        
+        .display.many-numbers span {
+          font-size: 36px;
+        }
+        
+        .display.very-many-numbers span {
+          font-size: 28px;
+        }
+
+        .display[data-state='message'] span {
+          font-size: 16px;
+        }
+
+        .action-row {
+          flex-direction: column;
+        }
+        
+        .settings-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="app">
+        <div class="history-panel">
+          <div class="history-title">
+            <span>历史记录</span>
+            <button class="clear-history">清空历史</button>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </div>
+        <div class="main-content">
+          <header class="app-header">
+            <div class="title">
+              <span class="icon">🔀</span>
+              <span>随机数生成器</span>
+            </div>
+          </header>
+
+          <section class="textarea-card" aria-hidden="true">
+            <div
+              style="
+                height: 120px;
+                border: 1px solid #f1f2f7;
+                border-radius: 6px;
+                background: linear-gradient(180deg, #fff, #fcfbf8);
+              "
+            ></div>
+          </section>
+
+          <section class="result-card">
+            <div class="display" id="display" data-state="message">
+              <span>点击开始按钮生成随机数</span>
+            </div>
+            <div class="action-row">
+              <button id="startBtn" class="btn-accent">开始</button>
+              <button id="stopBtn" class="btn-accent" style="display: none; background: #d9534f; border-color: #d9534f;">停止</button>
+            </div>
+          </section>
+
+          <section class="settings-card">
+            <div class="settings-title">
+              <span class="icon">⚙️</span>
+              <span>设置</span>
+            </div>
+            <div class="settings-grid">
+              <div class="field">
+                <label for="countInput">数目：</label>
+                <input id="countInput" type="number" min="1" value="1" />
+              </div>
+              <div class="field">
+                <label for="minInput">最小值：</label>
+                <input id="minInput" type="number" value="1" min="0" max="9999" />
+                <span class="field-hint">(0-9999)</span>
+              </div>
+              <div class="field">
+                <label for="repeatSelect">重复出现：</label>
+                <select id="repeatSelect">
+                  <option value="disallow">不重复</option>
+                  <option value="allow">允许重复</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="maxInput">最大值：</label>
+                <input id="maxInput" type="number" value="100" min="1" max="9999" />
+                <span class="field-hint">(1-9999)</span>
+              </div>
+            </div>
+
+            <div class="quick-buttons">
+              <button type="button" data-count="1">1 个随机数</button>
+              <button type="button" data-count="2">2 个随机数</button>
+              <button type="button" data-count="3">3 个随机数</button>
+              <button type="button" data-count="5">5 个随机数</button>
+              <button type="button" data-count="10">10 个随机数</button>
+            </div>
+
+            <div class="range-buttons">
+              <button type="button" data-range="1,10">1-10 随机数</button>
+              <button type="button" data-range="1,100">1-100 随机数</button>
+              <button type="button" data-range="100,200">100-200 随机数</button>
+              <button type="button" data-range="1,1000">1-1000 随机数</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const minInput = document.querySelector('#minInput');
+      const maxInput = document.querySelector('#maxInput');
+      const countInput = document.querySelector('#countInput');
+      const repeatSelect = document.querySelector('#repeatSelect');
+      const startBtn = document.querySelector('#startBtn');
+      const stopBtn = document.querySelector('#stopBtn');
+      const display = document.querySelector('#display');
+      const quickButtons = document.querySelectorAll('[data-count]');
+      const rangeButtons = document.querySelectorAll('[data-range]');
+      const historyList = document.querySelector('#historyList');
+      const clearHistoryBtn = document.querySelector('.clear-history');
+
+      let customResults = [];
+      let lastSequence = [];
+      let lastDisplayedValue = null;
+      let history = JSON.parse(localStorage.getItem('numberHistory') || '[]');
+      let isDrawing = false;
+
+
+      minInput.addEventListener('input', validateMinInput);
+      minInput.addEventListener('change', ensureRangeValidity);
+      maxInput.addEventListener('input', validateMaxInput);
+      maxInput.addEventListener('change', ensureRangeValidity);
+      
+      function showToast(message, type = 'error') {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.add('show');
+        }, 10);
+
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            if (toast.parentNode) {
+              toast.remove();
+            }
+          }, 300);
+        }, 2000);
+      }
+
+      function validateMinInput() {
+        const value = Number(minInput.value);
+        if (value > 9999) {
+          minInput.value = 9999;
+          showToast('数值应该在0-9999之间', 'error');
+        } else if (value < 0) {
+          minInput.value = 0;
+          showToast('数值应该在0-9999之间', 'error');
+        }
+      }
+      
+      function validateMaxInput() {
+        const value = Number(maxInput.value);
+        if (value > 9999) {
+          maxInput.value = 9999;
+          showToast('数值应该在1-9999之间', 'error');
+        } else if (value < 1) {
+          maxInput.value = 1;
+          showToast('数值应该在1-9999之间', 'error');
+        }
+      }
+      repeatSelect.addEventListener('change', () => {
+        if (repeatSelect.value === 'disallow') {
+          const unique = new Set(customResults);
+          if (unique.size !== customResults.length) {
+            flashDisplay('当前结果存在重复，请重新设置');
+          }
+        }
+      });
+
+      quickButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          countInput.value = btn.dataset.count;
+        });
+      });
+
+      rangeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const [min, max] = btn.dataset.range.split(',').map(Number);
+          minInput.value = min;
+          maxInput.value = max;
+          ensureRangeValidity();
+        });
+      });
+
+      startBtn.addEventListener('click', () => runDraw());
+      stopBtn.addEventListener('click', stopAnimation);
+
+
+      function addToHistory(numbers) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+        const historyItem = {
+          numbers: Array.isArray(numbers) ? numbers.slice() : [numbers],
+          time: timeStr,
+          timestamp: now.getTime()
+        };
+        
+        history.unshift(historyItem);
+        if (history.length > 20) {
+          history = history.slice(0, 20);
+        }
+        
+        try {
+          localStorage.setItem('numberHistory', JSON.stringify(history));
+        } catch (e) {
+          console.error('保存历史记录失败:', e);
+        }
+        updateHistoryDisplay();
+      }
+
+      function updateHistoryDisplay() {
+        historyList.innerHTML = '';
+        
+        if (history.length === 0) {
+          historyList.innerHTML = '<div style="text-align: center; color: #9aa0b7; padding: 20px; font-size: 13px;">暂无历史记录</div>';
+          return;
+        }
+        
+        history.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          div.innerHTML = `
+            <div class="content">
+              <div class="time">${item.time}</div>
+              <div class="numbers">${item.numbers.join(' ')}</div>
+            </div>
+            <button class="delete-btn" title="删除此记录">×</button>
+          `;
+          
+          const contentDiv = div.querySelector('.content');
+          const deleteBtn = div.querySelector('.delete-btn');
+          
+          contentDiv.addEventListener('click', () => {
+            setDisplay(item.numbers.length > 1 ? item.numbers.join(' ') : item.numbers[0]);
+            lastSequence = item.numbers.slice();
+          });
+          
+          deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteHistoryItem(index);
+          });
+          
+          historyList.appendChild(div);
+        });
+      }
+
+      function clearHistory() {
+        if (confirm('确定要清空所有历史记录吗？')) {
+          history = [];
+          localStorage.removeItem('numberHistory');
+          updateHistoryDisplay();
+        }
+      }
+
+      function deleteHistoryItem(index) {
+        if (confirm('确定要删除这条记录吗？')) {
+          history.splice(index, 1);
+          try {
+            localStorage.setItem('numberHistory', JSON.stringify(history));
+          } catch (e) {
+            console.error('保存历史记录失败:', e);
+          }
+          updateHistoryDisplay();
+        }
+      }
+
+      clearHistoryBtn.addEventListener('click', clearHistory);
+
+      updateHistoryDisplay();
+
+      let animationController = null;
+
+      async function runDraw() {
+        ensureRangeValidity();
+
+        const targets = customResults.slice();
+        const expectCount = Number(countInput.value) || 1;
+        const allowRepeat = repeatSelect.value === 'allow';
+
+        let sequence;
+
+        if (targets.length) {
+          if (!allowRepeat) {
+            const uniqueTargets = new Set(targets);
+            if (uniqueTargets.size !== targets.length) {
+              flashDisplay('设置为不重复，但结果中存在重复数字');
+              return;
+            }
+          }
+          sequence = targets;
+        } else {
+          const randomResults = generateRandomResults(expectCount, allowRepeat);
+          if (!randomResults.length) {
+            return;
+          }
+          sequence = randomResults;
+        }
+
+        lastSequence = sequence.slice();
+
+        isDrawing = true;
+        toggleControls(true);
+        try {
+          const completed = await revealSequence(sequence);
+          if (completed) {
+            lastSequence = sequence.slice();
+            addToHistory(sequence);
+          }
+        } catch (err) {
+          if (err?.message !== 'STOPPED') {
+            console.error(err);
+            flashDisplay('出现错误，请重试');
+          }
+        } finally {
+          toggleControls(false);
+          isDrawing = false;
+        }
+      }
+
+      async function revealSequence(sequence) {
+        if (sequence.length === 1) {
+          const result = await animatedReveal(sequence[0]);
+          return result.status !== 'stopped';
+        }
+        
+        const result = await animatedRevealMultiple(sequence);
+        return result.status !== 'stopped';
+      }
+
+      function ensureRangeValidity() {
+        let min = Number(minInput.value);
+        let max = Number(maxInput.value);
+        let hasError = false;
+
+        if (!Number.isFinite(min) || min < 0) {
+          min = 1;
+          minInput.value = min;
+        } else if (min > 9999) {
+          min = 9999;
+          minInput.value = min;
+          showToast('数值应该在0-9999之间', 'error');
+          hasError = true;
+        }
+
+        if (!Number.isFinite(max) || max < min) {
+          max = Math.max(min, 100);
+          maxInput.value = max;
+        } else if (max > 9999) {
+          max = 9999;
+          maxInput.value = max;
+          showToast('数值应该在1-9999之间', 'error');
+          hasError = true;
+        }
+
+        if (min > max) {
+          [min, max] = [max, min];
+          minInput.value = min;
+          maxInput.value = max;
+          if (!hasError) {
+            flashDisplay('已自动调整：最小值不能大于最大值');
+          }
+        }
+        
+        return { min, max };
+      }
+
+      function generateRandomResults(count, allowRepeat) {
+        const { min, max } = ensureRangeValidity();
+        const result = [];
+
+        const pool = [];
+        for (let i = min; i <= max; i += 1) pool.push(i);
+
+        if (!allowRepeat && count > pool.length) {
+          flashDisplay('范围内可用数字不足，请允许重复或调整范围');
+          return [];
+        }
+
+        while (result.length < count) {
+          let value;
+          if (allowRepeat) {
+            value = Math.floor(Math.random() * (max - min + 1)) + min;
+          } else {
+            const idx = Math.floor(Math.random() * pool.length);
+            value = pool[idx];
+            pool.splice(idx, 1);
+          }
+          result.push(value);
+        }
+        
+        for (let i = result.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        
+        return result;
+      }
+
+      async function animatedReveal(targetValue) {
+        if (animationController) {
+          animationController.stop();
+        }
+
+        return new Promise((resolve) => {
+          const interval = 35;
+
+          const timer = setInterval(() => {
+            const random = randomNearby(targetValue);
+            setDisplay(random);
+          }, interval);
+
+          const cleanup = () => {
+            clearInterval(timer);
+            animationController = null;
+          };
+
+          animationController = {
+            stop: ({ skipFinal = false } = {}) => {
+              cleanup();
+              if (skipFinal) {
+                resolve({ status: 'stopped' });
+              } else {
+                finalReveal(targetValue, (value) =>
+                  resolve({ status: 'completed', value })
+                );
+              }
+            },
+          };
+        });
+      }
+
+      async function animatedRevealMultiple(targetSequence) {
+        if (animationController) {
+          animationController.stop();
+        }
+
+        return new Promise((resolve) => {
+          const interval = 35;
+
+          const timer = setInterval(() => {
+            const randomNumbers = targetSequence.map(target => randomNearby(target));
+            setDisplay(randomNumbers.join(' '));
+          }, interval);
+
+          const cleanup = () => {
+            clearInterval(timer);
+            animationController = null;
+          };
+
+          animationController = {
+            stop: ({ skipFinal = false } = {}) => {
+              cleanup();
+              if (skipFinal) {
+                resolve({ status: 'stopped' });
+              } else {
+                finalRevealMultiple(targetSequence, () =>
+                  resolve({ status: 'completed', value: targetSequence })
+                );
+              }
+            },
+          };
+        });
+      }
+
+      function stopAnimation() {
+        if (animationController) {
+          animationController.stop({ skipFinal: true });
+          toggleControls(false);
+          isDrawing = false;
+          
+          if (lastSequence && lastSequence.length > 0) {
+            const finalResult = lastSequence.length > 1 ? lastSequence.join(' ') : lastSequence[0];
+            setDisplay(finalResult);
+            addToHistory(lastSequence);
+          }
+        }
+      }
+
+      function finalReveal(target, resolve) {
+        const loops = 12;
+        const series = Array.from(
+          { length: loops },
+          (_, i) => (i % 2 === 0 ? target : randomNearby(target))
+        ).concat(target);
+
+        const delay = 30;
+        series.forEach((value, index) => {
+          setTimeout(() => {
+            setDisplay(value);
+            if (index === series.length - 1) {
+              resolve(target);
+            }
+          }, index * delay);
+        });
+      }
+
+      function finalRevealMultiple(targetSequence, resolve) {
+        const loops = 12;
+        const delay = 30;
+        
+        const series = [];
+        for (let i = 0; i <= loops; i++) {
+          if (i === loops) {
+            series.push(targetSequence.join(' '));
+          } else if (i % 2 === 0) {
+            const values = targetSequence.map(target => randomNearby(target));
+            series.push(values.join(' '));
+          } else {
+            series.push(targetSequence.join(' '));
+          }
+        }
+
+        series.forEach((displayValue, index) => {
+          setTimeout(() => {
+            setDisplay(displayValue);
+            if (index === series.length - 1) {
+              resolve(targetSequence);
+            }
+          }, index * delay);
+        });
+      }
+
+      function randomNearby(target) {
+        const { min: userMin, max: userMax } = ensureRangeValidity();
+        
+        if (target < userMin || target > userMax) {
+          target = Math.max(userMin, Math.min(userMax, target));
+        }
+        
+        const range = userMax - userMin + 1;
+        if (range <= 3) {
+          return Math.floor(Math.random() * range) + userMin;
+        }
+        
+        const delta = Math.min(Math.max(2, Math.floor(range * 0.3)), Math.abs(target - userMin), Math.abs(userMax - target));
+        const min = Math.max(userMin, target - delta);
+        const max = Math.min(userMax, target + delta);
+        
+        const result = Math.floor(Math.random() * (max - min + 1)) + min;
+        return Math.max(userMin, Math.min(userMax, result));
+      }
+
+
+      function pause(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function setDisplay(value) {
+        lastDisplayedValue = value;
+        display.dataset.state = 'number';
+        
+        const numbers = value.toString().split(' ');
+        display.className = 'display';
+        
+        if (numbers.length > 15) {
+          display.classList.add('very-many-numbers');
+        } else if (numbers.length > 8) {
+          display.classList.add('many-numbers');
+        }
+        
+        display.innerHTML = `<span>${value}</span>`;
+      }
+
+      function flashDisplay(message, quiet = false) {
+        display.dataset.state = 'message';
+        display.innerHTML = `<span>${message}</span>`;
+        const timeout = quiet ? 1000 : 1800;
+        setTimeout(() => {
+          if (display.dataset.state !== 'message') {
+            return;
+          }
+          if (customResults.length) {
+            setDisplay(customResults.length > 1 ? customResults.join(' ') : customResults[0]);
+          } else if (lastDisplayedValue !== null) {
+            setDisplay(lastDisplayedValue);
+          } else {
+            display.innerHTML = '<span>点击开始按钮生成随机数</span>';
+          }
+        }, timeout);
+      }
+
+      function toggleControls(running = false) {
+        startBtn.style.display = running ? 'none' : '';
+        stopBtn.style.display = running ? '' : 'none';
+        startBtn.disabled = running;
+        stopBtn.disabled = !running;
+      }
+
+      function parseNumberList(str = '') {
+        return str
+          .split(/[\s,，]+/)
+          .map((x) => Number(x.trim()))
+          .filter((n) => Number.isFinite(n));
+      }
+    </script>
+  </body>
+</html>
+
